@@ -7,7 +7,7 @@ arch=('any')
 url="https://github.com/jorgeTTPD/spotman"
 license=('MIT')
 depends=('python' 'python-rich' 'python-textual' 'python-requests' 'python-dotenv')
-makedepends=('python-build' 'python-installer' 'python-wheel')
+makedepends=('python-build' 'python-installer' 'python-wheel' 'python-setuptools')
 source=("${pkgname}-${pkgver}.tar.gz")
 sha256sums=('SKIP')
 
