@@ -1,0 +1,95 @@
+=== BITÁCORA DEL PROYECTO ===
+SpotifyManager — ~/Proyectos/SpotifyManager
+Última actualización: 02/08/2026
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. QUÉ ES
+   Gestor de Spotify desde terminal con TUI (Textual 8.2.8 + rich).
+   - Editar playlists (seleccionar canciones y eliminarlas)
+   - Mover canciones de una playlist a otra
+   - Crear playlists en blanco
+   - Importar playlists desde CSV (export Spotify) o TXT (Artista - Canción / URIs)
+   - Limpieza avanzada (duplicados, no disponibles, podcasts, por artista/álbum)
+   - Fusionar / dividir playlists
+   - Ordenar, exportar, top Spotify, reautenticar
+   - Autenticación PKCE (sin client_secret) usando client_id de spotify_player
+
+2. AUTENTICACIÓN
+   - Client ID: el que tenga configurado el usuario en ~/.config/spotifymanager/config.json
+   - Redirect URI automático: http://127.0.0.1:8888/callback (debe estar registrado en el dashboard)
+   - Redirect URI manual (respaldo): https://www.google.com/
+   - Flujo Automático: inicia servidor local, abre navegador, captura el code solo
+   - El token se guarda en ~/.config/spotifymanager/token.json (se refresca automáticamente)
+   - Config en ~/.config/spotifymanager/config.json
+   - Fallback: token de ~/.cache/spotify-player/user_client_token.json
+   - Migración automática de token/caché viejos del proyecto → ~/.config/spotifymanager
+
+3. SCOPES AUTORIZADOS
+   - playlist-read-private
+   - playlist-modify-public
+   - playlist-modify-private
+   - user-top-read
+
+4. MENÚ ACTUAL (11 opciones)
+   1. Editar Playlist                      → seleccionar canciones y eliminarlas + undo z
+   2. Mover canciones a otra playlist      → origen → selección → destino + undo z
+   3. Crear playlist                       → playlist en blanco (privada)
+   4. CSV/TXT → Playlist (importar)
+   5. Limpiar playlist (avanzado)          → 5 tipos (dups, no disponibles, podcasts, por artista/álbum) + undo z
+   6. Fusionar / Dividir playlists         → fusionar, fusionar sin dups, dividir por artista/álbum + undo z
+   7. Ordenar playlist
+   8. Playlist → CSV/TXT (exportar)
+   9. Top artistas / canciones
+   10. Reautenticar
+   11. Cerrar
+
+5. ESTRUCTURA DEL PROYECTO
+   main.py                    ← Entry point
+   src/
+     config.py                ← Credenciales y rutas
+     spotify_client.py        ← API calls, auth PKCE, servidor local, fallback token
+     csv_handler.py           ← Lee/escribe CSV y TXT
+     tui/
+       app.py                 ← SpotifyManagerApp (navegación, transparencia al arrancar)
+       console.py             ← Console de Rich (logs silenciables)
+       auth.py                ← Menú de autenticación por consola (automático/manual)
+       setup.py               ← Configuración inicial (pedir Client ID)
+       transparent.py         ← Parches de transparencia/glass (fondo de la terminal)
+       widgets.py             ← Helpers de borde/estilo + modales reutilizables
+                                (PlaylistPicker, MultiPlaylistPicker, MultiFilePickerModal,
+                                 ListPickerModal, TextInputModal, ConfirmScreen)
+       screens/
+         main_screen.py       ← Menú principal (11 opciones)
+         edit_screen.py       ← Editar playlist (seleccionar + eliminar)
+         move_screen.py       ← Mover canciones a otra playlist
+         create_screen.py     ← Crear playlist en blanco
+         import_screen.py     ← CSV/TXT → Playlist
+         cleanup_screen.py    ← Limpieza avanzada (5 tipos)
+         merge_screen.py      ← Fusionar / Dividir
+         sort_screen.py       ← Ordenar playlist
+         export_screen.py     ← Playlist → CSV/TXT
+         top_screen.py        ← Top artistas/canciones
+   data/csv/                  ← CSVs/TXTs del usuario (no borrar)
+   requirements.txt           ← rich, textual>=0.80, requests, python-dotenv
+
+6. FASE COMPLETADA: Roadmap de funcionalidades
+   ✓ Fase Limpieza avanzada    (cleanup_screen.py nuevo; dedupe_screen.py eliminado)
+   ✓ Fase Fusión y División    (merge_screen.py nuevo; MultiPlaylistPicker)
+   ✓ Fase Playlist Builder     (builder.py + builder_screen.py; luego ELIMINADA por decisión de usuario)
+   ✓ Fase Estadísticas         (stats.py + stats_screen.py; luego ELIMINADA por decisión de usuario)
+   ✓ Reestructuración de menú  (edit_screen/move_screen/create_screen nuevos;
+                                playlists.py, builder_screen.py, stats_screen.py,
+                                src/builder.py, src/stats.py ELIMINADOS)
+
+7. PENDIENTE / IDEAS FUTURAS
+   - Suite de tests unificada en tests/ (hoy son scripts por fase en /tmp con cliente falso)
+   - Buscar canciones y agregarlas a playlists
+   - Reproducir canciones (play/pause/skip)
+   - Guardar/quitar canciones de biblioteca (user-library-modify)
+
+8. COMANDO PARA EJECUTAR
+   cd ~/Proyectos/SpotifyManager && python3 main.py
+
+   Compile check:
+   python3 -m py_compile main.py src/*.py src/tui/*.py src/tui/screens/*.py

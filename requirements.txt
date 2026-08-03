@@ -1,0 +1,4 @@
+rich>=13.0
+textual>=0.80
+requests>=2.28
+python-dotenv>=1.0

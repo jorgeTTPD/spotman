@@ -1,0 +1,18 @@
+# Entorno / secretos
+.env
+*.token.json
+.spotify_token.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+dist/
+build/
+*.egg-info/
+
+# Datos personales del usuario (NO subir a GitHub)
+data/
+cache/

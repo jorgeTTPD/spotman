@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "spotman"
+version = "1.0.0"
+description = "TUI manager de Spotify (Textual): edita, mueve, crea, limpia, fusiona, ordena e importa playlists desde la terminal"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [{name = "Jorge", email = "jorgeescalera500@gmail.com"}]
+requires-python = ">=3.10"
+classifiers = [
+    "Environment :: Console",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Multimedia :: Sound/Audio",
+    "Topic :: Terminals",
+]
+dependencies = [
+    "rich>=13.0",
+    "textual>=0.80",
+    "requests>=2.28",
+    "python-dotenv>=1.0",
+]
+
+[project.scripts]
+spotman = "src.tui.app:run"
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff", "pyinstaller"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+exclude = ["tests*"]
+
+[tool.pyinstaller]
+name = "spotman"
+onefile = true
+console = true
+hidden-imports = [
+    "rich",
+    "textual",
+    "requests",
+    "dotenv",
+]

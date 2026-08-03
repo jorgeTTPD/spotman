@@ -1,0 +1,282 @@
+# SPEC — SpotifyManager v2 (features)
+
+**Repo:** `~/Proyectos/SpotifyManager` · **TUI con Textual + rich** · API de Spotify
+
+## 1. Contexto / estado actual
+
+- `main.py` → `src/tui/app.py` (menú con `InquirerPy`) → `src/tui/menus.py` → `src/spotify_client.py`.
+- Hoy usa **InquirerPy** para menús y rich solo para un `Panel` en `setup.py`. Se reemplaza por **Textual**.
+- `src/csv_handler.py` ya lee CSV (`Track Name`,`Artist Name(s)`), TXT (`Artista - Canción`) y archivos de URIs (`spotify:track:`).
+- Menú actual: *Ver Playlists* y *Cerrar*.
+- `get_auth_url()` solo pide scope `playlist-read-private`.
+- `TOKEN_FILE` y `CACHE_DIR` apuntan dentro del proyecto (`BASE_DIR`).
+- Existe caché `cache/track_uris.json` con formato `"nombre|artista" (minúsculas) → uri` — reutilizar como caché de búsqueda.
+- Fallback token en `~/.cache/spotify-player/user_client_token.json`.
+- **Textual 8.2.8 ya está instalado en el sistema.**
+
+## 2. Arquitectura TUI (Textual + rich)
+
+- **Textual** = framework de la app (ventanas, menús, tablas, navegación).
+- **rich** = renderizado de paneles/texto decorativo donde Textual no lo cubre (`Panel`, `Box`, markup).
+- **Regla de estilo obligatoria:** todos los menús, listas, tablas y diálogos van **encerrados en rectángulos con borde** (`border` con título). Estilo consistente: `border: round cyan;` + `title` en cada contenedor.
+- **Fondo:** usar el fondo predeterminado de la terminal del sistema. NO definir fondo oscuro propio ni sobrescribir el color de fondo de la terminal.
+- **Sin InquirerPy**: se elimina de `requirements.txt`.
+
+### Estructura (Textual App con Screens)
+```
+src/tui/
+  app.py          → SpotifyManagerApp(App) — maneja navegación entre screens
+  screens/
+    __init__.py
+    main_screen.py    → menú principal (OptionList) en contenedor con borde
+    playlists.py      → Ver Playlists (+ tracks)
+    import_screen.py  → CSV/TXT → Playlist
+    dedupe_screen.py  → Limpiar repetidas
+    sort_screen.py    → Ordenar playlist
+    top_screen.py     → Top artistas/canciones
+    export_screen.py  → Playlist → CSV/TXT
+  widgets.py      → helpers: rectángulos/bordes reutilizables (bordered_container, bordered_table)
+```
+- Navegación: `app.push_screen(...)` / `pop_screen`. Bindeo básico: `q` = volver/atrás, `Enter` = seleccionar.
+- Menú principal: `OptionList` dentro de un contenedor `border` con título `🎵 Spotify Manager` y footer de instrucciones.
+- Listas de playlists/tracks: `DataTable` dentro de rectángulo con borde y título (nombre de playlist).
+- Diálogos de confirmación (dedupe/sort): `Screen` modal con panel `border` y botones `Sí/No`.
+
+## 3. Cambios de configuración (`src/config.py`)
+
+- `TOKEN_FILE` → `~/.config/spotifymanager/token.json`
+- `CACHE_DIR` → `~/.config/spotifymanager/cache` (migrar contenido si existe)
+- `CSV_DIR` se mantiene en `BASE_DIR/data/csv`
+- Migrar token/caché viejos en ejecución si existen.
+
+## 4. `src/spotify_client.py`
+
+### 4.1 Scopes en `get_auth_url()`
+`playlist-read-private playlist-modify-public playlist-modify-private user-top-read`
+
+> ⚠️ Requiere **re-autenticación una vez** (el token actual solo tiene `playlist-read-private`). Añadir aviso claro en la UI cuando una operación falle con 403.
+
+### 4.2 Métodos nuevos
+- `create_playlist(name: str, public: bool = False) -> str|None` → POST `/users/{user_id}/playlists` body `{"name","public","description":""}` → devuelve `id`.
+- `search_track(artist: str, name: str) -> str|None` → GET `/search?q=track:{name} artist:{artist}&type=track&limit=1`. Fallback: buscar solo por título (`q=track:{name}`). Chequear caché `track_uris.json` antes de llamar a la API (`key = f"{artist.lower()}|{name.lower()}"`); guardar en caché tras resolver.
+- `add_tracks(playlist_id: str, uris: list[str])` → POST `/playlists/{id}/tracks` con `{"uris": [...]}`, lotes de 100.
+- `remove_tracks(playlist_id: str, uris: list[str])` → DELETE `/playlists/{id}/tracks` con `{"tracks":[{"uri":...}]}`, lotes de 100.
+- `get_top(kind: str, time_range: str, limit: int) -> list` → GET `/me/top/{kind}` con `time_range` (`short_term|medium_term|long_term`), paginado hasta `limit` (máx 50 por página).
+- `get_playlist_tracks()`: añadir campo `added_at` a cada track (de `item["added_at"]`).
+
+## 5. `src/csv_handler.py`
+
+- `write_csv(filepath, tracks)` → cabeceras exactas `Track Name`,`Artist Name(s)` (formato export de Spotify, re-importable). Artistas separados por `;` si hay varios.
+- `write_txt(filepath, tracks)` → una línea `Artista - Canción` por track.
+
+## 6. Screens (cada uno en rectángulo con borde)
+
+Helper compartido: `pick_playlist(client) -> playlist|None` (selector de playlists en `DataTable` con borde) reutilizable.
+
+### 6.1 Importar — CSV/TXT → Playlist
+1. Seleccionar archivo de `CSV_DIR` (rectángulo con lista) o ruta manual.
+2. Parsear (`csv_handler.read_tracks`). Si el TXT tiene URIs `spotify:track:`, usarlas directo.
+3. Resolver URIs con `search_track` mostrando **progreso** (`Encontrados X/Y`); listar no encontrados.
+4. Pedir nombre de playlist → `create_playlist` → `add_tracks` (lotes 100).
+5. Resumen final en panel con borde.
+
+### 6.2 Limpiar repetidas
+1. `pick_playlist` → traer tracks.
+2. Detectar dups por **URI** (opción extra: por nombre+artista normalizados).
+3. **Diálogo de confirmación** (panel `border`) listando lo que se quitará (mantener 1ª ocurrencia) → `remove_tracks`.
+4. Mensaje "N duplicados eliminados".
+
+### 6.3 Ordenar playlist
+1. `pick_playlist` → traer tracks.
+2. Criterio en rectángulo: **Título / Artista / Álbum / Duración** + orden **asc/desc**.
+3. Ordenar localmente; reordenar vía delete-all + re-add (lotes de 100), **con confirmación** que avisa del riesgo (los tracks se quitan y se vuelven a añadir en el nuevo orden).
+4. Mensaje de éxito.
+
+### 6.4 Top artistas/canciones
+1. Tipo: **Artistas / Canciones** (toggle en rectángulo).
+2. Rango: **4 semanas** (`short_term`) / **6 meses** (`medium_term`) / **todo el tiempo** (`long_term`).
+3. `DataTable` con borde con top N (20).
+4. Botón **crear playlist con este top** (`create_playlist` + `add_tracks`).
+
+### 6.5 Exportar — Playlist → CSV/TXT
+1. `pick_playlist` → traer tracks.
+2. Formato **CSV / TXT** (rectángulo con opciones).
+3. Escribir en `CSV_DIR` con nombre sanitizado (`<playlist>.csv|.txt`, caracteres inválidos `/\:*?"<>|` → `_`).
+4. Mostrar ruta absoluta del archivo generado en panel con borde.
+
+## 7. `src/tui/app.py` — menú principal
+
+Menú (OptionList en rectángulo con borde):
+1. Ver Playlists
+2. CSV/TXT → Playlist (importar)
+3. Limpiar canciones repetidas
+4. Ordenar playlist
+5. Playlist → CSV/TXT (exportar)
+6. Top artistas / canciones
+7. Cerrar
+
+## 8. Notas
+
+- Reusar `_api_call` (ya maneja 401 refresh, 403 fallback y 429 rate-limit). Si una operación de escritura falla con 403, mostrar aviso de *"re-autentícate (nuevos permisos requeridos)"*.
+- Búsquedas de muchas canciones: respetar rate limit; el caché `track_uris.json` evita búsquedas repetidas.
+- `requirements.txt`: **quitar `InquirerPy`, añadir `textual>=0.80`**, mantener `rich`.
+- No borrar `data/csv` (son los CSV del usuario).
+
+## 9. Verificación manual
+
+1. `python main.py` → re-autenticar (debe pedir nuevos scopes).
+2. Importar un CSV de `data/csv` → playlist nueva con tracks (y reportar no encontrados).
+3. Dedupe en una playlist con repetidas → confirmar reducción de tracks.
+4. Ordenar por cada criterio (título/artista/álbum/duración, asc/desc).
+5. Top artistas y canciones en 3 rangos → crear playlist desde top.
+6. Exportar una playlist a CSV y TXT → re-importar el CSV para validar formato.
+7. Comprobar que token/caché se crearon en `~/.config/spotifymanager/`.
+8. **Revisar visualmente que todos los menús/vistas estén encerrados en rectángulos con borde y que el fondo sea el predeterminado de la terminal.**
+
+---
+
+# Mockup de la interfaz
+
+Estilo: bordes `round cyan`, títulos en cada rectángulo, footer con atajos (`↑↓`, `Enter`, `q`), confirmaciones como diálogo centrado con borde. **Fondo = el de la terminal del sistema (sin fondo oscuro propio).**
+
+## Menú principal
+
+```
+╭─────── 🎵 Spotify Manager ───────────────────────────────────────╮
+│                                                                  │
+│   Conectado como: Jorge                                          │
+│                                                                  │
+│   ┌───────────── MENÚ ──────────────┐                            │
+│   │ ▸ 1. Ver Playlists              │                            │
+│   │   2. CSV/TXT → Playlist         │                            │
+│   │   3. Limpiar canciones repetidas│                            │
+│   │   4. Ordenar playlist           │                            │
+│   │   5. Playlist → CSV/TXT         │                            │
+│   │   6. Top artistas / canciones   │                            │
+│   │   7. Cerrar                     │                            │
+│   └─────────────────────────────────┘                            │
+│                                                                  │
+│   ══════════════════════════════════════════════════════════════ │
+│   ↑↓ navegar   Enter seleccionar   q salir                      │
+╰──────────────────────────────────────────────────────────────────╯
+```
+
+## Ver Playlists → tracks
+
+```
+╭─────── Ver Playlists ────────────────────────────────────────────╮
+│   ┌────────── Playlists ──────────┐                              │
+│   │ ▸ Diva_Pop (A)          (120) │                              │
+│   │   Egocéntrico A         (85)  │                              │
+│   │   Introspección (B)     (60)  │                              │
+│   │   Concentración         (42)  │                              │
+│   └───────────────────────────────┘                              │
+│                                                                  │
+│   ┌────────── Diva_Pop (A) — 120 tracks ───────────────────────┐ │
+│   │   #  ARTISTA              TÍTULO              ÁLBUM        │ │
+│   │   1  Sabrina Carpenter    Espresso            Short n' Sweet│ │
+│   │   2  Chappell Roan        Good Luck, Babe!    The Rise...  │ │
+│   │   3  Ariana Grande        we can't be friends Eternal Sun..│ │
+│   └────────────────────────────────────────────────────────────┘ │
+│   ↑↓ navegar   Enter ver   q volver                              │
+╰──────────────────────────────────────────────────────────────────╯
+```
+
+## CSV/TXT → Playlist (importar)
+
+```
+╭─────── CSV/TXT → Playlist ───────────────────────────────────────╮
+│   ┌────────── Archivos en data/csv ──────────┐                   │
+│   │ ▸ Diva_Pop(A).csv                        │                   │
+│   │   Egocéntrico A.csv                      │                   │
+│   │   mis canciones.txt                      │                   │
+│   │   [ruta manual...]                       │                   │
+│   └──────────────────────────────────────────┘                   │
+│                                                                  │
+│   ┌────────── Resolviendo canciones ────────────────────────────┐│
+│   │  ███████████░░░░░░░░░░░░░  120/150  (80%)                  ││
+│   │  ✓ 120 encontradas   ✗ 30 no encontradas                   ││
+│   │                                                             ││
+│   │  ┌──── No encontradas ────┐                                 ││
+│   │  │  Somebody - Unknown     │                                ││
+│   │  │  La canción perdida - ? │                                ││
+│   │  └─────────────────────────┘                                ││
+│   └─────────────────────────────────────────────────────────────┘│
+│   Nombre de la playlist: [Diva_Pop (A) 2026            ]         │
+│   [Crear playlist]                                              │
+╰──────────────────────────────────────────────────────────────────╯
+```
+
+## Limpiar repetidas (diálogo de confirmación)
+
+```
+╭─────── Limpiar canciones repetidas ──────────────────────────────╮
+│   ┌────────── Elige playlist ──────────┐                         │
+│   │ ▸ Egocéntrico A            (85)    │                         │
+│   └────────────────────────────────────┘                         │
+│                                                                  │
+│   ╭─────── ⚠️ Confirmar ⚠️ ──────────────────────────────────╮  │
+│   │  Se eliminarán 12 canciones repetidas:                    │  │
+│   │                                                            │  │
+│   │   • Espresso (2 veces)                                    │  │
+│   │   • Good Luck, Babe! (2 veces)                            │  │
+│   │   • ...                                                   │  │
+│   │                                                            │  │
+│   │         [ ✓ Sí, eliminar ]      [ ✗ Cancelar ]            │  │
+│   ╰────────────────────────────────────────────────────────────╯  │
+╰──────────────────────────────────────────────────────────────────╯
+```
+
+## Ordenar playlist
+
+```
+╭─────── Ordenar playlist ─────────────────────────────────────────╮
+│   ┌────────────── Criterio ──────────────┐                       │
+│   │ ▸ Título                            │                       │
+│   │   Artista                           │                       │
+│   │   Álbum                             │                       │
+│   │   Duración                          │                       │
+│   └─────────────────────────────────────┘                       │
+│   ┌────────────── Orden ─────────────────┐                       │
+│   │ ▸ Ascendente (A→Z)                   │                       │
+│   │   Descendente (Z→A)                  │                       │
+│   └──────────────────────────────────────┘                       │
+│   ⚠ Se quitarán y volverán a añadir los tracks en el nuevo orden │
+│   [ ✓ Ordenar ]  [ ✗ Cancelar ]                                 │
+╰──────────────────────────────────────────────────────────────────╯
+```
+
+## Top artistas / canciones
+
+```
+╭─────── Top artistas / canciones ─────────────────────────────────╮
+│   ┌── Tipo ──┐   ┌─────── Rango ────────┐                       │
+│   │ ▸Artistas│   │ ▸ 4 semanas          │                       │
+│   │  Canciones│  │   6 meses            │                       │
+│   └──────────┘   │   Todo el tiempo     │                       │
+│                  └──────────────────────┘                       │
+│   ┌────── Top 20 artistas — 4 semanas ─────────────────────────┐│
+│   │   #  ARTISTA            OYENTES_MES (si aplica)            ││
+│   │   1  Sabrina Carpenter                                     ││
+│   │   2  Chappell Roan                                         ││
+│   │   3  Ariana Grande                                         ││
+│   └────────────────────────────────────────────────────────────┘│
+│   [ Crear playlist con este top ]                                │
+╰──────────────────────────────────────────────────────────────────╯
+```
+
+## Playlist → CSV/TXT (exportar)
+
+```
+╭─────── Playlist → CSV/TXT ───────────────────────────────────────╮
+│   ┌────────── Elige playlist ──────────┐   ┌── Formato ──┐      │
+│   │ ▸ Concentración            (42)    │   │ ▸ CSV       │      │
+│   │   Diva_Pop (B)            (98)    │   │   TXT       │      │
+│   │   Disney side             (75)    │   └─────────────┘      │
+│   └────────────────────────────────────┘                        │
+│                                                                 │
+│   ✓ Playlist exportada                                          │
+│   📁 /home/jorge/Proyectos/SpotifyManager/data/csv/             │
+│      Concentración.csv  (42 tracks)                             │
+╰──────────────────────────────────────────────────────────────────╯
+```
