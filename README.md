@@ -7,6 +7,8 @@ importar/exportar y ver tops.
 
 **TUI:** Textual + rich · **API:** Spotify Web API · **Auth:** PKCE (sin client secret)
 
+![spotman](screenshot.png)
+
 ---
 
 ## 📦 Instalación
