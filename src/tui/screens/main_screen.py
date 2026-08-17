@@ -76,7 +76,7 @@ class MainScreen(Screen):
         elif option_id == "top":
             self.app.push_screen(TopScreen())
         elif option_id == "reauth":
-            # Sale de la TUI con resultado 'reauth': run() vuelve a hacer login
+
             self.app.exit("reauth")
         elif option_id == "exit":
             self.app.exit()

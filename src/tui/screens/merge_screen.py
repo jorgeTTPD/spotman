@@ -59,10 +59,10 @@ class MergeScreen(Screen):
     def __init__(self):
         super().__init__()
         self._mode = None
-        self._sources = []      # playlists para fusionar
-        self._source = None     # playlist a dividir
-        self._groups = []       # [(nombre, [uris])] para dividir
-        self._undo = []         # pila de dicts {op, ids}
+        self._sources = []
+        self._source = None
+        self._groups = []
+        self._undo = []
         self._processing = False
 
     def action_back(self):
@@ -109,15 +109,15 @@ class MergeScreen(Screen):
                 callback=self._on_source,
             )
 
-    # ------------------------------------------------------------------
-    # Fusión
-    # ------------------------------------------------------------------
+
+
+
 
     def _on_sources(self, sources):
         if not self.is_mounted:
             return
         if not sources:
-            # Canceló el selector o confirmó sin marcar ninguna: volver en silencio
+
             return
         self._sources = sources
         default = f"Fusión de {len(sources)} playlists"
@@ -161,7 +161,7 @@ class MergeScreen(Screen):
             if new_id:
                 ok = self.app.client.add_tracks(new_id, all_uris)
                 if not ok:
-                    # No dejar una playlist vacía a medias en la cuenta
+
                     self.app.client.delete_playlist(new_id)
             self.app.call_from_thread(self._merged, ok, new_id, name, len(all_uris))
 
@@ -192,9 +192,9 @@ class MergeScreen(Screen):
                 "[red]✗ Error al fusionar. Re-autentícate (nuevos permisos requeridos).[/red]"
             )
 
-    # ------------------------------------------------------------------
-    # División
-    # ------------------------------------------------------------------
+
+
+
 
     def _on_source(self, playlist):
         if not self.is_mounted:
@@ -282,9 +282,9 @@ class MergeScreen(Screen):
                 "[red]✗ Error al dividir. Re-autentícate (nuevos permisos requeridos).[/red]"
             )
 
-    # ------------------------------------------------------------------
-    # Deshacer
-    # ------------------------------------------------------------------
+
+
+
 
     def action_undo(self):
         if self._processing or not self._undo:

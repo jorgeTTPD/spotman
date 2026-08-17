@@ -48,10 +48,10 @@ class EditScreen(Screen):
         super().__init__()
         self._playlist = None
         self._tracks = []
-        self._row_keys = {}      # índice -> RowKey
+        self._row_keys = {}
         self._marker_col = None
-        self._selected = set()   # URIs seleccionadas
-        self._undo = []          # pila de (playlist_id, uris)
+        self._selected = set()
+        self._undo = []
         self._processing = False
 
     def action_back(self):
@@ -132,9 +132,9 @@ class EditScreen(Screen):
             self._row_keys[i] = rk
         self._update_status()
 
-    # ------------------------------------------------------------------
-    # Selección
-    # ------------------------------------------------------------------
+
+
+
 
     def _tracks_focused(self):
         try:
@@ -208,9 +208,9 @@ class EditScreen(Screen):
             "x eliminar · z deshacer[/dim]"
         )
 
-    # ------------------------------------------------------------------
-    # Eliminar
-    # ------------------------------------------------------------------
+
+
+
 
     @on(Button.Pressed, "#del-btn")
     def on_del_btn(self):
@@ -266,9 +266,9 @@ class EditScreen(Screen):
                 "[red]✗ Error al eliminar. Re-autentícate (nuevos permisos requeridos).[/red]"
             )
 
-    # ------------------------------------------------------------------
-    # Deshacer
-    # ------------------------------------------------------------------
+
+
+
 
     def action_undo(self):
         if self._processing or not self._undo:

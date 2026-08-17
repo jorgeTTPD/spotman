@@ -19,12 +19,12 @@ SPOTIFY_AUTH = "https://accounts.spotify.com/api/token"
 
 CLIENT_ID = ""
 CLIENT_SECRET = ""
-# Redirect URI del flujo automático: Spotify redirige a un servidor local
-# que captura el code automáticamente (debe estar registrada en el dashboard).
-# IMPORTANTE: debe coincidir EXACTAMENTE con una URI registrada en tu app de
-# Spotify (developer.spotify.com → Settings → Redirect URIs).
+
+
+
+
 REDIRECT_URI = "http://127.0.0.1:8888/callback"
-# Redirect URI del flujo manual (respaldo, como en la v1).
+
 GOOGLE_REDIRECT_URI = "https://www.google.com/"
 USER_AGENT_EMAIL = "user@example.com"
 

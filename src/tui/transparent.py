@@ -33,21 +33,21 @@ log = logging.getLogger(__name__)
 
 _APPLIED = False
 
-# API pública estable (segura de importar en cualquier versión)
-from rich.color import Color as RichColor  # noqa: E402
-from rich.style import Style  # noqa: E402
-from textual.color import Color  # noqa: E402
 
-# Internals de textual.filter: pueden cambiar/renombrarse entre versiones.
+from rich.color import Color as RichColor
+from rich.style import Style
+from textual.color import Color
+
+
 try:
-    from textual.filter import (  # noqa: E402
+    from textual.filter import (
         ANSIToTruecolor,
         DIM_FACTOR,
         NO_DIM,
     )
     _HAS_INTERNALS = True
-except Exception:  # pragma: no cover - blindaje de versión
-    ANSIToTruecolor = DIM_FACTOR = NO_DIM = None  # type: ignore[assignment]
+except Exception:
+    ANSIToTruecolor = DIM_FACTOR = NO_DIM = None
     _HAS_INTERNALS = False
 
 PATCHABLE = textual.__version__.startswith("8.2") and _HAS_INTERNALS
@@ -66,12 +66,12 @@ def _patch_rich_color() -> bool:
                 else RichColor.from_ansi(ansi)
             )
         if a == 0:
-            # Transparente real -> fondo por defecto del terminal
+
             return RichColor.parse("default")
-        # Comportamiento original para colores opacos
+
         return fget(self)
 
-    Color.rich_color = property(rich_color)  # type: ignore[method-assign]
+    Color.rich_color = property(rich_color)
     return True
 
 
@@ -112,7 +112,7 @@ def _patch_truecolor_style() -> bool:
 
         return style + Style.from_color(color, bgcolor) if changed else style
 
-    ANSIToTruecolor.truecolor_style = truecolor_style  # type: ignore[method-assign]
+    ANSIToTruecolor.truecolor_style = truecolor_style
     return True
 
 
@@ -132,7 +132,7 @@ def _patch_dim_color() -> bool:
             blue1 + (blue2 - blue1) * factor,
         )
 
-    _tf.dim_color = dim_color  # type: ignore[assignment]
+    _tf.dim_color = dim_color
     return True
 
 
@@ -154,7 +154,7 @@ def apply_patches() -> bool:
         try:
             if patch():
                 applied += 1
-        except Exception:  # pragma: no cover - blindaje de versión
+        except Exception:
             log.exception("transparencia: falló el parche %s, se omite", name)
 
     _APPLIED = True

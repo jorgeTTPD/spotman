@@ -35,8 +35,8 @@ class _AuthHandler(http.server.BaseHTTPRequestHandler):
         params = parse_qs(urlparse(self.path).query)
         code = params.get("code", [None])[0]
         if code:
-            # Primero respondemos al navegador, luego encolamos el code
-            # (evita que el shutdown del server corte la respuesta).
+
+
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
             self.end_headers()
@@ -78,7 +78,7 @@ class SpotifyClient:
         self._fallback_token = None
         self._token_file = config.TOKEN_FILE
         self._code_verifier = None
-        self.silent = False  # True durante la TUI: no imprimir a stdout
+        self.silent = False
 
     def _log(self, message):
         if not self.silent:
@@ -274,7 +274,7 @@ class SpotifyClient:
         """
         redirect_uri = config.REDIRECT_URI
 
-        # El servidor local escucha en el host/puerto del redirect_uri registrado
+
         parsed = urlparse(redirect_uri)
         host = parsed.hostname or "127.0.0.1"
         port = parsed.port or 8989
@@ -445,9 +445,9 @@ class SpotifyClient:
             url = data.get("next")
         return tracks
 
-    # ------------------------------------------------------------------
-    # v2: escritura, búsqueda y top
-    # ------------------------------------------------------------------
+
+
+
 
     def _load_track_cache(self):
         path = os.path.join(config.CACHE_DIR, "track_uris.json")
@@ -527,9 +527,9 @@ class SpotifyClient:
                 return False
         return True
 
-    # ------------------------------------------------------------------
-    # Gestión de playlists (renombrar, privacidad, eliminar, duplicar)
-    # ------------------------------------------------------------------
+
+
+
 
     def rename_playlist(self, playlist_id, name):
         r = self._api_call(
@@ -562,7 +562,7 @@ class SpotifyClient:
         if not new_id:
             return None
         if uris and not self.add_tracks(new_id, uris):
-            # Limpiamos la copia vacía para no dejar basura en la cuenta
+
             self.delete_playlist(new_id)
             return None
         return new_id

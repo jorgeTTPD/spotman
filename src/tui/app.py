@@ -1,6 +1,6 @@
 from textual.app import App
 
-# Transparencia 100%: monkey-patches de Textual (se aplican al importar)
+
 from . import transparent
 
 from .auth import show_auth
@@ -20,7 +20,7 @@ class SpotifyManagerApp(App):
     TITLE = "🎵 Spotify Manager"
     SUB_TITLE = "Gestor de playlists"
 
-    # Fondo: el de la terminal del sistema (sin fondo oscuro propio)
+
     CSS = """
     App {
         background: transparent;
@@ -54,7 +54,7 @@ class SpotifyManagerApp(App):
         self.user_name = user_name
 
     def on_mount(self):
-        # Durante la TUI, silenciar prints del cliente (irían a stdout)
+
         self.client.silent = True
         self.push_screen(MainScreen())
 
@@ -86,13 +86,13 @@ def run():
         result = SpotifyManagerApp(client, user_name).run()
         if result != "reauth":
             break
-        # Reautenticar: sale de la TUI, vuelve a hacer login y reinicia
+
         console.print()
         console.print("[yellow]🔑 Reautenticando con Spotify...[/yellow]")
         client.silent = False
         new_user = show_auth(client)
         if not new_user:
-            # Canceló: mantiene su sesión anterior y vuelve a abrir la TUI
+
             console.print(
                 "[dim]Reautenticación cancelada, continúas con tu sesión actual.[/dim]"
             )

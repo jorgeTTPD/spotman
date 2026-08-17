@@ -46,12 +46,12 @@ class MoveScreen(Screen):
 
     def __init__(self):
         super().__init__()
-        self._source = None      # playlist origen
+        self._source = None
         self._tracks = []
         self._row_keys = {}
         self._marker_col = None
         self._selected = set()
-        self._undo = []          # pila de (origen, destino, uris)
+        self._undo = []
         self._processing = False
 
     def action_back(self):
@@ -132,9 +132,9 @@ class MoveScreen(Screen):
             self._row_keys[i] = rk
         self._update_status()
 
-    # ------------------------------------------------------------------
-    # Selección
-    # ------------------------------------------------------------------
+
+
+
 
     def _tracks_focused(self):
         try:
@@ -208,9 +208,9 @@ class MoveScreen(Screen):
             "m mover · z deshacer[/dim]"
         )
 
-    # ------------------------------------------------------------------
-    # Mover
-    # ------------------------------------------------------------------
+
+
+
 
     @on(Button.Pressed, "#move-btn")
     def on_move_btn(self):
@@ -279,9 +279,9 @@ class MoveScreen(Screen):
                 "[red]✗ Error al mover. Re-autentícate (nuevos permisos requeridos).[/red]"
             )
 
-    # ------------------------------------------------------------------
-    # Deshacer
-    # ------------------------------------------------------------------
+
+
+
 
     def action_undo(self):
         if self._processing or not self._undo:

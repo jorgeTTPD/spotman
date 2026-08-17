@@ -225,7 +225,7 @@ class ImportScreen(Screen):
                 f"[green]✓ Playlist '{name}' creada con {len(self._uris)} tracks.{extra}[/green]"
             )
             self.app.notify("Playlist creada")
-            # Evitar crear la misma playlist dos veces
+
             self.query_one("#create-btn", Button).disabled = True
             self.query_one("#retry-btn", Button).disabled = True
             self.query_one("#name-input", Input).value = ""

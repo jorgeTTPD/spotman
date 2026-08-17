@@ -117,7 +117,7 @@ class MultiPlaylistPicker(ModalScreen):
         self.client = client
         self.dialog_title = title
         self.playlists = []
-        self._selected = set()  # índices seleccionados
+        self._selected = set()
         self._row_keys = {}
         self._marker_col = None
 
@@ -248,7 +248,7 @@ class ListPickerModal(ModalScreen):
     def __init__(self, title="Elige opción", rows=None, col2="Cantidad"):
         super().__init__()
         self.dialog_title = title
-        self.rows = rows or []  # list[tuple[label, count]]
+        self.rows = rows or []
         self.col2 = col2
 
     def compose(self):

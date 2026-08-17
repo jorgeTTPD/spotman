@@ -62,7 +62,7 @@ class CleanupScreen(Screen):
         self._playlist = None
         self._tracks = []
         self._target_uris = []
-        self._undo = []  # pila de (playlist_id, uris) para deshacer
+        self._undo = []
         self._processing = False
 
     def action_back(self):
