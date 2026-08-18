@@ -14,7 +14,7 @@ RANGES = [
 
 
 class TopScreen(Screen):
-    """Top artistas/canciones con creación de playlist desde el top."""
+    
 
     BINDINGS = [Binding("q", "back", "Volver")]
 

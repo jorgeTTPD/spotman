@@ -17,7 +17,7 @@ from ..widgets import (
 
 
 class MergeScreen(Screen):
-    """Fusionar playlists y dividir por artista/álbum."""
+    
 
     BINDINGS = [
         Binding("q", "back", "Volver"),

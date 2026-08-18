@@ -9,7 +9,7 @@ from ..widgets import ConfirmScreen, PlaylistPicker, bordered_container
 
 
 class EditScreen(Screen):
-    """Editar Playlist: selecciona canciones y elimínalas (con deshacer z)."""
+    
 
     BINDINGS = [
         Binding("q", "back", "Volver"),

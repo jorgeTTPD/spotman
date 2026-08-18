@@ -5,7 +5,7 @@ from textual.widgets import Button, DataTable, Input, Static
 
 
 def apply_border(widget, title=""):
-    """Estilo glass: borde round white + título (transparencia de la terminal)."""
+    
     widget.styles.border = ("round", "white")
     if title:
         widget.border_title = title
@@ -13,27 +13,27 @@ def apply_border(widget, title=""):
 
 
 def bordered_container(*children, title="", **kwargs):
-    """Contenedor Vertical encerrado en rectángulo con borde y título."""
+    
     return apply_border(Vertical(*children, **kwargs), title)
 
 
 def bordered_horizontal(*children, title="", **kwargs):
-    """Contenedor Horizontal encerrado en rectángulo con borde y título."""
+    
     return apply_border(Horizontal(*children, **kwargs), title)
 
 
 def bordered_table(title="", **kwargs):
-    """DataTable encerrado en rectángulo con borde y título."""
+    
     return apply_border(DataTable(**kwargs), title)
 
 
 def bordered_static(content="", title="", **kwargs):
-    """Static (panel de texto) encerrado en rectángulo con borde y título."""
+    
     return apply_border(Static(content, **kwargs), title)
 
 
 class PlaylistPicker(ModalScreen):
-    """Selector reutilizable de playlists (DataTable con borde)."""
+    
 
     BINDINGS = [Binding("q", "cancel", "Cancelar")]
 
@@ -94,7 +94,7 @@ class PlaylistPicker(ModalScreen):
 
 
 class MultiPlaylistPicker(ModalScreen):
-    """Selección múltiple de playlists (espacio marca, Enter confirma)."""
+    
 
     BINDINGS = [
         Binding("q", "cancel", "Cancelar"),
@@ -171,7 +171,7 @@ class MultiPlaylistPicker(ModalScreen):
 
 
 class TextInputModal(ModalScreen):
-    """Modal con campo de texto + botones OK/Cancelar (devuelve el texto o None)."""
+    
 
     BINDINGS = [Binding("escape", "cancel", "Cancelar")]
 
@@ -230,7 +230,7 @@ class TextInputModal(ModalScreen):
 
 
 class ListPickerModal(ModalScreen):
-    """Selector genérico de opciones (DataTable con 2 columnas), devuelve el label."""
+    
 
     BINDINGS = [Binding("q", "cancel", "Cancelar")]
 
@@ -278,7 +278,7 @@ class ListPickerModal(ModalScreen):
 
 
 class ConfirmScreen(ModalScreen):
-    """Diálogo modal de confirmación (panel con borde + Sí/No)."""
+    
 
     BINDINGS = [Binding("q", "cancel", "Cancelar")]
 

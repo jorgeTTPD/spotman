@@ -53,19 +53,19 @@ def read_tracks(filepath):
 
 
 def sanitize_filename(name):
-    """Reemplaza caracteres inválidos para nombres de archivo por `_`."""
+    
     import re
 
     return re.sub(r'[\\/:*?"<>|]', "_", name)
 
 
 def _artist_field(track):
-    """Artistas en formato export de Spotify (separados por `;`)."""
+    
     return track.get("artist", "").replace(", ", "; ")
 
 
 def write_csv(filepath, tracks):
-    """Escribe tracks en CSV con cabeceras exactas del export de Spotify."""
+    
     with open(filepath, "w", encoding="utf-8", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=["Track Name", "Artist Name(s)"])
         writer.writeheader()
@@ -76,7 +76,7 @@ def write_csv(filepath, tracks):
 
 
 def write_txt(filepath, tracks):
-    """Escribe tracks en TXT con una línea `Artista - Canción` por track."""
+    
     with open(filepath, "w", encoding="utf-8") as f:
         for t in tracks:
             f.write(f"{_artist_field(t)} - {t.get('name', '')}\n")

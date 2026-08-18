@@ -27,7 +27,7 @@ def _pkce_challenge(verifier):
 
 
 class _AuthHandler(http.server.BaseHTTPRequestHandler):
-    """Captura el code que Spotify redirige a http://127.0.0.1:8989/login."""
+    
 
     queue = queue.Queue()
 
@@ -65,7 +65,7 @@ class _AuthHandler(http.server.BaseHTTPRequestHandler):
 
 
 class _AuthServer(socketserver.ThreadingTCPServer):
-    """Servidor local reutilizable (permite rearrancar tras TIME_WAIT)."""
+    
 
     allow_reuse_address = True
     daemon_threads = True
@@ -267,11 +267,11 @@ class SpotifyClient:
         )
 
     def auth_via_browser(self):
-        """Flujo automático: abre el navegador y captura el code solo.
+        
 
-        Spotify redirige al redirect_uri registrado (servidor local),
-        que captura el code automáticamente. Sin pegar nada en la terminal.
-        """
+
+
+
         redirect_uri = config.REDIRECT_URI
 
 
@@ -405,7 +405,7 @@ class SpotifyClient:
         return playlists
 
     def _simplify_track(self, t):
-        """Normaliza un objeto track/episode de la API a nuestro dict interno."""
+        
         album_name = ""
         if t.get("album"):
             album_name = t["album"].get("name", "")
@@ -423,12 +423,12 @@ class SpotifyClient:
         }
 
     def get_playlist_tracks(self, playlist_id):
-        """Lee los tracks de una playlist.
+        
 
-        Spotify renombró el endpoint (2025): /playlists/{id}/tracks ahora
-        devuelve 403 y el nuevo es /playlists/{id}/items, con la canción
-        en el campo 'item' (antes 'track').
-        """
+
+
+
+
         tracks = []
         url = f"{config.SPOTIFY_API}/playlists/{playlist_id}/items?limit=100"
         while url:
@@ -555,7 +555,7 @@ class SpotifyClient:
         return bool(r and r.status_code == 200)
 
     def duplicate_playlist(self, source_id, new_name, public=False):
-        """Crea una copia con las mismas canciones y visibilidad de la original."""
+        
         tracks = self.get_playlist_tracks(source_id)
         uris = [t["uri"] for t in tracks if t.get("uri")]
         new_id = self.create_playlist(new_name, public=bool(public))

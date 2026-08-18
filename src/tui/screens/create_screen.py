@@ -9,7 +9,7 @@ from ..widgets import TextInputModal, bordered_container
 
 
 class CreateScreen(Screen):
-    """Crear playlist en blanco: pide el nombre y la crea (privada)."""
+    
 
     BINDINGS = [Binding("q", "back", "Volver")]
 

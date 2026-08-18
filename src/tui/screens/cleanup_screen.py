@@ -16,7 +16,7 @@ from ..widgets import (
 
 
 class CleanupScreen(Screen):
-    """Limpieza avanzada: duplicados, no disponibles, podcasts, por artista/álbum."""
+    
 
     BINDINGS = [
         Binding("q", "back", "Volver"),

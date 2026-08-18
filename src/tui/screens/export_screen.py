@@ -11,7 +11,7 @@ from ..widgets import bordered_container, bordered_static, PlaylistPicker
 
 
 class ExportScreen(Screen):
-    """Playlist → CSV/TXT: formato y ruta absoluta del archivo generado."""
+    
 
     BINDINGS = [Binding("q", "back", "Volver")]
 

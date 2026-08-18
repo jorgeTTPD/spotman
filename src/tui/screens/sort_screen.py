@@ -23,7 +23,7 @@ ORDERS = [
 
 
 class SortScreen(Screen):
-    """Ordenar playlist: criterio + orden, con confirmación del riesgo."""
+    
 
     BINDINGS = [Binding("q", "back", "Volver")]
 

@@ -1,26 +1,26 @@
-"""Transparencia 100% para Textual 8.2.x.
 
-Bug de fondo: Textual convierte ``background: transparent`` en
-``Color(0,0,0,alpha=0)``, pero ``Color.rich_color`` descarta el canal
-alpha y lo emite como NEGRO OPACO literal. Estos 3 monkey-patches
-corrigen el bug en caliente (sin tocar el paquete instalado):
 
-  * Parche 1 - ``Color.rich_color`` respeta el alpha: si alpha == 0
-    devuelve ``RichColor.parse("default")`` (fondo por defecto del
-    terminal = transparente real).
-  * Parche 2 - ``ANSIToTruecolor.truecolor_style``: NO convierte los
-    colores 'default' a los colores del tema (que volvían a tapar la
-    transparencia). 'default' sobrevive y Rich emite '49'.
-  * Parche 3 - ``dim_color``: no crashear cuando un color no tiene
-    triplet (los colores 'default' no tienen). Si falta, devuelve el
-    color sin cambiar.
 
-Blindaje: solo se aplica si textual.__version__ empieza por "8.2"
-(los internals cambian entre versiones). Los imports de internals de
-``textual.filter`` van en try/except: si no existen, PATCHABLE pasa a
-False y la app arranca igual (solo pierde la transparencia, nunca
-crashea).
-"""
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 from __future__ import annotations
 
@@ -54,7 +54,7 @@ PATCHABLE = textual.__version__.startswith("8.2") and _HAS_INTERNALS
 
 
 def _patch_rich_color() -> bool:
-    """Parche 1: Color.rich_color respeta el canal alpha."""
+    
     fget = Color.rich_color.fget
 
     def rich_color(self) -> RichColor:
@@ -76,7 +76,7 @@ def _patch_rich_color() -> bool:
 
 
 def _patch_truecolor_style() -> bool:
-    """Parche 2: no convertir colores 'default' al tema en el filtro ANSI."""
+    
     import textual.filter as _tf
 
     @functools.lru_cache(1024)
@@ -117,7 +117,7 @@ def _patch_truecolor_style() -> bool:
 
 
 def _patch_dim_color() -> bool:
-    """Parche 3: dim_color no crashea con colores sin triplet."""
+    
     import textual.filter as _tf
 
     @functools.lru_cache(1024)
@@ -137,7 +137,7 @@ def _patch_dim_color() -> bool:
 
 
 def apply_patches() -> bool:
-    """Aplica los 3 parches (idempotente). Devuelve True si se aplicaron."""
+    
     global _APPLIED
     if _APPLIED:
         return True

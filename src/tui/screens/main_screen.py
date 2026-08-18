@@ -16,7 +16,7 @@ from .top_screen import TopScreen
 
 
 class MainScreen(Screen):
-    """Menú principal: OptionList en contenedor con borde y título."""
+    
 
     BINDINGS = [Binding("q", "quit", "Salir")]
 

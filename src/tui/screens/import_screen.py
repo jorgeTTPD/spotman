@@ -18,7 +18,7 @@ from ..widgets import bordered_container
 
 
 class ImportScreen(Screen):
-    """CSV/TXT → Playlist: selección de archivo, resolución y creación."""
+    
 
     BINDINGS = [Binding("q", "back", "Volver")]
 

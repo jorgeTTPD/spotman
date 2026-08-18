@@ -9,7 +9,7 @@ from ..widgets import ConfirmScreen, PlaylistPicker, bordered_container
 
 
 class MoveScreen(Screen):
-    """Mover canciones: selecciona en la playlist origen y muévelas a otra (con deshacer z)."""
+    
 
     BINDINGS = [
         Binding("q", "back", "Volver"),

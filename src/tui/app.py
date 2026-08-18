@@ -15,7 +15,7 @@ transparent.apply_patches()
 
 
 class SpotifyManagerApp(App):
-    """Aplicación TUI principal (Textual)."""
+    
 
     TITLE = "🎵 Spotify Manager"
     SUB_TITLE = "Gestor de playlists"

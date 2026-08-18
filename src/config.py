@@ -30,7 +30,7 @@ USER_AGENT_EMAIL = "user@example.com"
 
 
 def migrate_old_paths():
-    """Migra token/caché viejos (dentro del proyecto) a ~/.config/spotifymanager."""
+    
     if not os.path.exists(TOKEN_FILE) and os.path.exists(OLD_TOKEN_FILE):
         os.makedirs(CONFIG_DIR, exist_ok=True)
         shutil.copy2(OLD_TOKEN_FILE, TOKEN_FILE)
